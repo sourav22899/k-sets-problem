@@ -17,29 +17,30 @@ ex = initialise(ex)
 @ex.automain
 def main(_run):
     args = edict(_run.config)
-    args.N = 2498
-    alpha = '0.1'
+    args.N = 200
+    alpha = '0.01'
+    args.T_0 = 7000
     args.k = int(float(alpha) * args.N)
 
 
-    files = glob(f'../hpce_results/logs/gold_results/wiki/*{alpha}.pkl')
+    files = glob(f'../hpce_results/logs/*{alpha}.pkl')
     print(files)
 
     all_regret_dict = {}
     for file in files:
-        if file.find('Oct_03') != -1:
+        if file.find('Oct_11') != -1:
             print(file)
             alg_name = file.split('/')[-1].split('_')[0]
             with open(file, 'rb') as f:
                 algo = pickle.load(f)
                 all_regret_dict[alg_name.upper()] = algo.stats["regret"]
                 args.T = algo.stats['time'] + 1
-                opt = int(args.T * algo.stats['regret'][-1] + algo.stats['total_rewards'])
+                opt = algo.stats["opt"]
 
 
             # import pdb; pdb.set_trace()
 
-    theory_regret = np.sqrt(2 * args.k * np.log(args.N * np.exp(1) / args.k) / np.arange(1, args.T + 1))
+    theory_regret = 2 * np.sqrt(2 * args.k * np.log(args.N / args.k) / np.arange(1, args.T + 1))
     # sns.set_style('whitegrid')
     sns.set_style("darkgrid")
     # sns.set_context("poster")
@@ -47,8 +48,12 @@ def main(_run):
     sns.color_palette("bright")
     sns.set_context("paper", font_scale=1.5, rc={"lines.linewidth": 1.5})
 
-    all_regret_dict[r'$O(\sqrt{T})$ Regret Upper Bound'] = theory_regret
+    all_regret_dict['$O(\sqrt{T})$ Regret Upper Bound'] = theory_regret
     all_regret_dict['Small Loss Bound'] = theory_regret * np.sqrt(opt / np.arange(1, args.T + 1))
+    lower_bound = 0.02 * np.sqrt(args.k * np.log(args.N / args.k) / np.arange(1, args.T_0 + 1))
+    # lower_bound = lower_bound - 1 * args.k ** 3 / (args.N * np.arange(1, args.T_0 + 1))
+    # lower_bound = np.maximum(1e-6 * np.ones(args.T_0), lower_bound)
+    all_regret_dict["Lower Bound"] = lower_bound
     # plt.semilogy(all_regret_dict['OCO'])
     # plt.show()
 
@@ -63,11 +68,11 @@ def main(_run):
     f, ax = plt.subplots()
     g_results = sns.lineplot(data=data)
     ax.set(yscale="log")
-    g_results.set_xlabel(r"Time~(T)", fontsize=15)
-    g_results.set_ylabel(r"Time-averaged Regret~(${R_T}/{T}$)", fontsize=15)
+    g_results.set_xlabel("Time~(T)", fontsize=15)
+    g_results.set_ylabel("Time-averaged Regret~(${R_T}/{T}$)", fontsize=15)
     plt.grid(linestyle='dashed', which='both')
-    plt.savefig(f"n={args.N}_alpha={alpha}.svg", format="svg")
-    plt.savefig(f"n={args.N}_alpha={alpha}.pdf", format="pdf")
+    plt.savefig(f"max_n={args.N}_alpha={alpha}.svg", format="svg")
+    plt.savefig(f"max_n={args.N}_alpha={alpha}.pdf", format="pdf")
     # locmin = mticker.LogLocator(base=10, subs=np.arange(0.1, 1, 0.1), numticks=10)
     # g_results.ax.yaxis.set_minor_locator(locmin)
     # g_results.ax.yaxis.set_minor_formatter(mticker.NullFormatter())

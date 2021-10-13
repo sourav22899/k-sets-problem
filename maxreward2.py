@@ -30,6 +30,14 @@ def get_time():
 
 getcontext().prec = 2000 ##
 
+def find_opt_cache(args, reward):
+    reward_mat = np.zeros((args.nfiles, args.nfiles))
+    for i in range(args.nfiles):
+        for j in range(args.nfiles):
+            if i - j:
+                reward_mat[i, j] = max(reward[i], reward[j])
+
+    return reward_mat
 
 ex = Experiment()
 ex = initialise(ex)
@@ -38,18 +46,15 @@ ex = initialise(ex)
 def main(_run):
     args = edict(_run.config)
     data = pd.read_csv(f"./data/{args.dataset}_cleaned.csv")
-    args.algo_list = ["oco"]
-    args.alpha_list = [0.02]
-
     if args.dataset == "mit":
-        data = data.groupby('request').tail(75)
+        data = data.groupby('request').tail(50)
         top_idx = data["P1"].value_counts()[:20].index.to_list()
         data = data.loc[data["P1"].isin(top_idx)]
         data = data.loc[data["P2"].isin(top_idx)]
     else:
         if args.sample == "top":
-            top_idx = data["request"].value_counts()[:args.nfiles].index.to_list()
-            top_idx = data["request"].value_counts()[700:900].index.to_list()
+            top_idx = data["request"].value_counts()[args.lim1:args.lim1 + args.nfiles].index.to_list()
+            # top_idx = data["request"].value_counts()[:].index.to_list()
             data = data.loc[data["request"].isin(top_idx)]
         elif args.sample == "random":
             random_idx = np.random.choice(data["request"].max(), size=args.nfiles, replace=False)
@@ -62,17 +67,20 @@ def main(_run):
 
     # data = data[data["request"] <= args.nfiles]
     args.T = len(data)
-    args.T_0 = args.T
+    args.T_0 = 7000
     files = list(data["request"])
     args.N = data["request"].max() + 1
+    args.N = args.nfiles
+    args.alpha_list = [args.alpha]
+    args.algo_list = ["oco"]
     try:
         for alpha in args.alpha_list:
-            args.k = int(alpha * args.N) ######
+            args.k = int(alpha * args.N)
             print(f"Total files:{args.N}, Timesteps: {args.T}, Cache Size:{args.k}")
             print(f"Max frequency:{data['request'].value_counts().max()}, "
                   f"Min frequency:{data['request'].value_counts().min()}")
-            import pdb;
-            pdb.set_trace()
+            # import pdb;
+            # pdb.set_trace()
             all_algo_regret = {k:[] for k in args.algo_list}
             # import  pdb; pdb.set_trace()
             for alg in args.algo_list:
@@ -132,17 +140,29 @@ def main(_run):
                 start_idx = len(regret)
 
                 pbar = tqdm(range(args.T), dynamic_ncols=True, leave=True)
-
+                opt = 0
+                cum_reward_mat = np.zeros((args.nfiles, args.nfiles))
+                all_rewards = np.zeros((args.T_0, args.N))
                 if args.algo not in ["lru", "lfu"]:
                     for t, file in enumerate(files, start=start_idx):
                         # import pdb; pdb.set_trace()
-                        if file in cache:
-                            total_rewards += 1
+                        reward_list = np.abs(np.asarray(cache) - file) / args.N
+                        total_rewards += (1 - np.min(reward_list))
                         _, cache = algo.get_kset(file)
-                        # print(p.sum())
+                        # total_rewards = 0
 
-                        files_seen[file] += 1
-                        opt = files_seen[(-files_seen).argsort()[:args.k]].sum()
+                        # files_seen += 1 - np.abs(np.arange(args.N) - file) / args.N
+                        # opt_cache = (-files_seen).argsort()[:args.k]
+                        all_reward = 1 - np.abs(np.arange(args.N) - file) / args.N
+                        #all_rewards[t] = all_reward
+                        cum_reward_mat += find_opt_cache(args, all_reward)
+                        opt = cum_reward_mat.max()
+                        # opt_cache = [510, 314]  ## for movielens
+                        # opt_cache = [510, 314, 257, 277] ## for movielens
+                        # opt += (1 - np.min(np.abs(np.asarray(opt_cache) - file) / args.N))
+                        # opt = files_seen[opt_cache].max()
+
+                        # opt = files_seen[opt_cache].sum()
                         regret.append((opt - total_rewards) / (t+1))
                         pbar.update(1)
                         pbar.set_description(
@@ -156,36 +176,11 @@ def main(_run):
                             break
 
                 else:
-                    @cached(max_size=args.k, algorithm=algorithms.LRU)
-                    def f_lru(x):
-                        return x
+                     NotImplementedError(f"{args.algo} is not implemented.")
 
-                    @cached(max_size=args.k, algorithm=algorithms.LFU)
-                    def f_lfu(x):
-                        return x
-
-                    cache_algo = f_lfu if args.algo == "lfu" else f_lru
-
-                    for t, file in enumerate(files, start=start_idx):
-                        cache_algo(file)
-                        total_rewards = cache_algo.cache_info().hits
-                        files_seen[file] += 1
-                        opt = files_seen[(-files_seen).argsort()[:args.k]].sum()
-                        regret.append((opt - total_rewards) / (t + 1))
-                        pbar.update(1)
-                        pbar.set_description(
-                            f"Time: {t + 1} | Total_Reward: {total_rewards} | OPT: {opt} "
-                            f"| Actual_Regret:{regret[-1]:4f} | Regret_UB:{theory_regret[t]:4f}"
-                        )
-
-                        # if t % 100 == 0:
-                        #     import pdb; pdb.set_trace()
-
-                        if t + 1 >= args.T_0:
-                            break
-
-                # import pdb; pdb.set_trace()
+                import pdb; pdb.set_trace()
                 all_algo_regret[args.algo] = regret
+                # print(opt_cache)
 
                 save_path = str(args.log_root / f"{args.algo}_{get_time()}_alpha={alpha}.pkl")
 
@@ -193,6 +188,7 @@ def main(_run):
                     stats = {
                         "total_rewards": total_rewards,
                         "files_seen": files_seen,
+                        "opt": opt,
                         "time": t,
                         "regret": regret,
                     }
@@ -210,12 +206,15 @@ def main(_run):
                              antialiased=True)
 
             # theory_regret for Hedge.
-            args.k = args.k / 2
-            theory_regret = 2 * np.sqrt(2 * args.k * np.log(args.N / args.k) / np.arange(1, args.T + 1))
+            theory_regret = np.sqrt(2 * args.k * np.log(args.N * np.exp(1) / args.k) / np.arange(1, args.T + 1))
             # theory_regret = 1.51 * np.sqrt(np.sqrt(np.log(args.N)) * args.k / np.arange(1, args.T + 1))
             small_loss_bound = theory_regret[:args.T_0] * np.sqrt(opt / np.arange(1, args.T_0 + 1))
+            lower_bound = 0.02 *  np.sqrt(args.k * np.log(args.N / args.k) / np.arange(1, args.T_0 + 1))
+            # lower_bound = lower_bound - 1 * args.k ** 3 / (args.N * np.arange(1, args.T_0 + 1))
+            # lower_bound = np.maximum(1e-6 * np.ones(args.T_0), lower_bound)
             plt.semilogy(rounds, theory_regret[:args.T_0], '-.', label="regret_upper_bound")
             plt.semilogy(rounds, small_loss_bound, '-.', label="small_loss_bound")
+            plt.semilogy(rounds, lower_bound, '-', label="lower_bound")
             plt.ylabel(r"$R_T/T$")
             plt.xlabel(r"T")
             plt.legend()
@@ -229,6 +228,7 @@ def main(_run):
             stats = {
                 "total_rewards": total_rewards,
                 "files_seen": files_seen,
+                "opt": opt,
                 "time": t,
                 "regret": regret
             }

@@ -16,9 +16,10 @@ ex = initialise(ex)
 def main(_run):
     args = edict(_run.config)
     args.N = 2498
+    args.dataset = "wiki"
 
     # hit rates
-    data = pd.read_csv('./wiki_2498_hit_rates.csv')
+    data = pd.read_csv(f'./{args.dataset}_{args.N}_hit_rates.csv')
     sns.set_style("darkgrid")
     # sns.set_context("poster")
     # sns.color_palette("gist_heat")
@@ -31,11 +32,16 @@ def main(_run):
     import pdb;pdb.set_trace()
     data = data.set_index('alphas')
     data.columns = [x.upper() for x in data.columns]
+    data = data.rename(columns={"OCO": "SAGE (FTRL)",
+                         "HEDGE": "SAGE (Hedge)",
+                         "FTPL": "Bhattacharjee et al."}, errors="ignore")
+
     f, ax = plt.subplots()
     g_results = sns.lineplot(data=data, markers=True)
     ax.xaxis.set_major_locator(mticker.MultipleLocator(0.1))
     g_results.set_xlabel("k/N ratio", fontsize=15)
-    g_results.set_ylabel("Hit Rates", fontsize=15)
+    g_results.set_ylabel("Hit Rate", fontsize=15)
     plt.grid(linestyle='dashed', which='both')
     plt.savefig(f"{args.dataset}_n={args.N}.svg", format="svg")
+    plt.savefig(f"{args.dataset}_n={args.N}.pdf", format="pdf")
     plt.show()

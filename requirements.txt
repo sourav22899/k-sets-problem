@@ -1,0 +1,9 @@
+pandas
+numpy
+scipy
+tqdm
+sacred
+matplotlib
+pickle
+memoization
+easydict

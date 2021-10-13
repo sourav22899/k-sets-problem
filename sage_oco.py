@@ -76,15 +76,15 @@ class sageOCO:
         self.R[y] += 1
         return p
 
-    # def get_kset(self, y):
-    #     p = self.calculate_marginals_oco(y)
-    #     return p, madowSampling(self.N, p, self.k)
-
     def get_kset(self, y):
-        perturbed_R = self.R + np.random.exponential(scale=1. / self.eta)
-        kset = np.argsort(perturbed_R)[::-1][:self.k]
-        self.R[y] += 1
-        return None, kset
+        p = self.calculate_marginals_oco(y)
+        return p, madowSampling(self.N, p, self.k)
+
+    # def get_kset(self, y):
+    #     perturbed_R = self.R + np.random.exponential(scale=1. / self.eta)
+    #     kset = np.argsort(perturbed_R)[::-1][:self.k]
+    #     self.R[y] += 1
+    #     return None, kset
 
 
 @ex.automain
