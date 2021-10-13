@@ -5,13 +5,12 @@ The library size `N=2430` and time steps `T=100863`.
 
 All the requirements are mentioned in `requirements.txt`. They can be installed using `pip install -r requirements.txt`.
 
-Currently six algorithms are considered:
+Currently five algorithms are considered:
  * `Hedge`
  * `OCO (Entropic Regularizer)`
  * `FTPL`
  * `LRU`
  * `LFU`
- * `Blackwell Approachability (BWA)`
  
 To choose the algorithm for which results are needed, modify `algo_list` in `base_config` in `config.py`. By default, all the algorithms are chosen and executed.
 
