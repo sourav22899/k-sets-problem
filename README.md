@@ -1,7 +1,6 @@
 # k-sets-problem
 
 The entire code is written in Python 3.6. 
-The library size `N=2430` and time steps `T=100863`.
 
 All the requirements are mentioned in `requirements.txt`. They can be installed using `pip install -r requirements.txt`.
 
