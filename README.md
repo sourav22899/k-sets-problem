@@ -1,4 +1,4 @@
-# k-sets-problem 
+# k-experts-problem 
 
 
 The entire code is written in Python 3.6. This is an ongoing work.
@@ -20,5 +20,10 @@ To choose the value of alpha for which results are needed, modify `alpha_list` i
 
 The log files are saved in `./logs/` and plots are saved in `./figures/`.
 
-## Run
-To run: `python main.py with base_config -p`
+## Execute
+### Individual algorithms
+Hedge: `python sage_hedge.py with base_config method='direct' N=200 eta=0.01 T=10 -p`
+FTPL: `python sage_oco.py with base_config N=200 eta=0.01 T=10 -p`
+
+### Variants of k-experts
+Sum-rewards (k-sets): `python main.py with base_config -p`
