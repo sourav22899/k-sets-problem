@@ -1,8 +1,10 @@
-# k-sets-problem
+# k-sets-problem 
 
-The entire code is written in Python 3.6. 
 
-All the requirements are mentioned in `requirements.txt`. They can be installed using `pip install -r requirements.txt`.
+The entire code is written in Python 3.6. This is an ongoing work.
+
+All the requirements are mentioned in `requirements.txt`. 
+They can be installed using `pip install -r requirements.txt`.
 
 Currently five algorithms are considered:
  * `Hedge`
