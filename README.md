@@ -22,8 +22,8 @@ The log files are saved in `./logs/` and plots are saved in `./figures/`.
 
 ## Execute
 ### Individual algorithms
-Hedge: `python sage_hedge.py with base_config method='direct' N=200 eta=0.01 T=10 -p`
-FTPL: `python sage_oco.py with base_config N=200 eta=0.01 T=10 -p`
+* Hedge: `python sage_hedge.py with base_config method='METHOD_NAME' -p`
+* OCO: `python sage_oco.py with base_config -p`
 
 ### Variants of k-experts
-Sum-rewards (k-sets): `python main.py with base_config -p`
+* Sum-rewards (k-sets): `python main.py with base_config -p`
