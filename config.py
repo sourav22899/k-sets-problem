@@ -26,8 +26,8 @@ def base_config():
     # algo_list = ["hedge", "oco"]
     algo_list = ["hedge", "lru", "ftpl", "lfu"]
     assert all(algo in ["hedge", "oco", "ftpl", "lru", "lfu", "bwa"] for algo in algo_list)
-    method = "direct"
-    assert method in ["iterative", "direct"]
+    method = "large"
+    assert method in ["iterative", "direct", "large"]
     cache = {}
     fig_root = Path('./figures/')
     log_root = Path('./logs/')
@@ -40,17 +40,8 @@ def base_config():
     assert dataset in ["wiki", "movielens", "mit", "zipf"]
     lim1 = 1
     lim2 = lim1 + 20
+    lp = 3
 
-
-# def test_config():
-#     expt_name = Path('ocr')
-#     train_data = Path('optdigits.tra')
-#     test_data = Path('optdigits.tes')
-#     n_wl = 64
-#     K = 1
-#
-#
-# named_configs = [ocr_config, isolet_config, test_config]
 named_configs = [base_config]
 
 
