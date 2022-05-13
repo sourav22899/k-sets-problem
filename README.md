@@ -21,14 +21,15 @@ To choose the value of alpha for which results are needed, modify `alpha_list` i
 
 The log files are saved in `./logs/` and plots are saved in `./figures/`.
 
-## How to run
+## How to Run
 ### Individual algorithms
 * Hedge: `python sage_hedge.py with base_config method='METHOD_NAME' -p`
 * OCO: `python sage_oco.py with base_config -p`
 * FTPL: `python ftpl.py with base_config -p`
 
 ### Variants of k-experts
-* Sum-rewards (k-sets): `python main.py with base_config -p`
+* Sum-rewards (k-sets): `python sum_rewards.py with base_config dataset='DATASET_NAME' -p`
+* Pairwise-rewards: `python pairwise_rewards.py with base_config dataset='DATASET_NAME' -p`
 
 ## Citation
 If you find this repo useful in your research, please consider to cite the following paper:
