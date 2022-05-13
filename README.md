@@ -21,7 +21,7 @@ To choose the value of alpha for which results are needed, modify `alpha_list` i
 
 The log files are saved in `./logs/` and plots are saved in `./figures/`.
 
-## Execution
+## How to run
 ### Individual algorithms
 * Hedge: `python sage_hedge.py with base_config method='METHOD_NAME' -p`
 * OCO: `python sage_oco.py with base_config -p`
