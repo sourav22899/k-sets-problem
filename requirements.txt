@@ -1,7 +1,7 @@
 easydict==1.9
 matplotlib==3.0.1
 memoization==0.3.2
-numpy==1.16.3
+numpy==1.21.0
 pandas==1.0.3
 sacred==0.8.1
 scipy==1.5.4
