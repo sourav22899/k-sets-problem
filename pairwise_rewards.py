@@ -61,7 +61,7 @@ def main(_run):
 
                 cache = np.random.randint(0, high=args.N, size=args.k)
                 total_rewards = 0
-                files_seen = np.zeros(args.N)
+                files_seen_histogram = np.zeros(args.N)
                 regret = []
 
                 if args.resume:
@@ -71,7 +71,7 @@ def main(_run):
 
                     total_rewards = algo.stats["total_rewards"]
                     files = files[algo.stats["time"] + 1:]
-                    files_seen = algo.stats["files_seen"]
+                    files_seen_histogram = algo.stats["files_seen_histogram"]
                     regret = algo.stats["regret"]
 
                 start_idx = len(regret)
@@ -82,8 +82,8 @@ def main(_run):
                         total_rewards += 1
                     _, cache = algo.get_kset(file)
 
-                    files_seen[file] += 1
-                    opt = files_seen[(-files_seen).argsort()[:args.k]].sum()
+                    files_seen_histogram[file] += 1
+                    opt = files_seen_histogram[(-files_seen_histogram).argsort()[:args.k]].sum()
                     regret.append((opt - total_rewards) / (t+1))
                     pbar.update(1)
                     pbar.set_description(
@@ -98,7 +98,7 @@ def main(_run):
                 with open(save_path, 'wb') as f:
                     stats = {
                         "total_rewards": total_rewards,
-                        "files_seen": files_seen,
+                        "files_seen_histogram": files_seen_histogram,
                         "time": t,
                         "regret": regret,
                     }
@@ -133,7 +133,7 @@ def main(_run):
         with open(save_path, 'wb') as f:
             stats = {
                 "total_rewards": total_rewards,
-                "files_seen": files_seen,
+                "files_seen_histogram": files_seen_histogram,
                 "time": t,
                 "regret": regret
             }
